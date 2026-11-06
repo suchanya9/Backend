@@ -11,7 +11,8 @@ export async function GET(request, { params }) {
     return NextResponse.json(
       {
         success: true,
-        message: "ดึงข้อมูลผู้คนที่ ${id} ใช้สำเร็จ",
+        message: `ดึงข้อมูลผู้คนที่ ${id} ใช้สำเร็จ`,
+        data: { id },
       },
       { status: 200 }
     );
@@ -33,12 +34,31 @@ export async function GET(request, { params }) {
 export async function PUT(request, { params }) {
   try {
     const { id } = await params;
-    console.log({ success: true, message: `เพิ่มข้อมูลผู้คนที่ ${id} ใช้สำเร็จ`, status: 200 });
+
+    // รับข้อมูลที่ส่งมาทาง Request Body สำหรับอัปเดต
+    const body = await request.json().catch(() => ({}));
+    const fullName = String(body.fullName || body.name || "").trim();
+    const phone = String(body.phone || body.tel || "").trim();
+
+    // ตรวจสอบว่ามีข้อมูลส่งมาแก้ไขหรือไม่
+    if (!fullName && !phone) {
+      return NextResponse.json(
+        { success: false, message: "กรุณาระบุข้อมูลที่ต้องการอัปเดต (fullName หรือ phone)" },
+        { status: 400 }
+      );
+    }
+
+    console.log({ success: true, message: `อัปเดตข้อมูลผู้คนที่ ${id} ใช้สำเร็จ`, status: 200 });
 
     return NextResponse.json(
       {
         success: true,
-        message: "เพิ่มข้อมูลผู้คนที่ ${id} ใช้สำเร็จ",
+        message: `อัปเดตข้อมูลผู้คนที่ ${id} ใช้สำเร็จ`,
+        data: {
+          id,
+          fullName: fullName || "ข้อมูลเดิม",
+          phone: phone || "ข้อมูลเดิม",
+        },
       },
       { status: 200 }
     );
@@ -65,7 +85,8 @@ export async function DELETE(request, { params }) {
     return NextResponse.json(
       {
         success: true,
-        message: "ลบข้อมูลผู้คนที่ ${id} ใช้สำเร็จ",
+        message: `ลบข้อมูลผู้คนที่ ${id} ใช้สำเร็จ`,
+        data: { id },
       },
       { status: 200 }
     );
